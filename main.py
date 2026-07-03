@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import socket
 import time
+import json
 
 app = FastAPI()
 
@@ -14,7 +15,7 @@ def home():
         return {
             "status": "running",
             "servers_found": len(servers),
-            "first_server": servers[0] if servers else "No servers found"
+            "mode": "Stratum Subscribe Test"
         }
 
     except Exception as e:
@@ -32,9 +33,11 @@ def scan_servers():
         with open("servers.txt", "r") as f:
             servers = [line.strip() for line in f if line.strip()]
 
-        subscribe = (
-            '{"id":1,"method":"mining.subscribe","params":[]}\n'
-        ).encode()
+        subscribe_message = json.dumps({
+            "id": 1,
+            "method": "mining.subscribe",
+            "params": []
+        }) + "\n"
 
         for server in servers:
             try:
@@ -50,11 +53,13 @@ def scan_servers():
 
                 start = time.time()
 
-                sock.sendall(subscribe)
+                sock.sendall(
+                    subscribe_message.encode()
+                )
 
                 response = sock.recv(4096)
 
-                elapsed = round(
+                subscribe_ms = round(
                     (time.time() - start) * 1000,
                     2
                 )
@@ -64,14 +69,14 @@ def scan_servers():
                 if response:
                     results.append({
                         "server": server,
-                        "stratum_ms": elapsed
+                        "subscribe_ms": subscribe_ms
                     })
 
             except Exception:
                 pass
 
         results.sort(
-            key=lambda x: x["stratum_ms"]
+            key=lambda x: x["subscribe_ms"]
         )
 
         return {
