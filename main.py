@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+import socket
+import time
 
 app = FastAPI()
+
 
 @app.get("/")
 def home():
@@ -19,8 +22,7 @@ def home():
             "status": "error",
             "message": str(e)
         }
-import socket
-import time
+
 
 @app.get("/scan")
 def scan_servers():
@@ -64,4 +66,6 @@ def scan_servers():
         }
 
     except Exception as e:
-        return {"error": str(e)}
+        return {
+            "error": str(e)
+        }
