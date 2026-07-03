@@ -4,4 +4,7 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message": "Server Tester is running"}
+    return {
+        "status": "running",
+        "message": "Mining Server Tester API"
+    }
